@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
+import { saveDocument } from '@/firebase/firebase'; // Adjust path as needed
+
 
 const UploadPage = () => {
   const [isDragging, setIsDragging] = useState(false);
@@ -30,7 +32,7 @@ const UploadPage = () => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       handleFileSelect(e.dataTransfer.files[0]);
     }
@@ -43,37 +45,65 @@ const UploadPage = () => {
       toast.error('Please upload a PDF or Word document');
       return;
     }
-    
+
     // Check file size (max 5MB)
     if (selectedFile.size > 5 * 1024 * 1024) {
       toast.error('File size should be less than 5MB');
       return;
     }
-    
+
     setFile(selectedFile);
   };
 
   const handleUpload = () => {
     if (!file) return;
-    
-    setIsUploading(true);
-    
-    // Simulate file processing with progress
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 5;
-      setUploadProgress(progress);
-      
-      if (progress >= 100) {
-        clearInterval(interval);
-        toast.success('Document processed successfully!');
-        setTimeout(() => {
-          // Navigate to the plan page
-          navigate('/plan');
-        }, 500);
+
+    const reader = new FileReader();
+
+    reader.onload = async (event) => {
+      const text = event.target?.result;
+
+      if (typeof text !== 'string') {
+        toast.error("Failed to read file content");
+        return;
       }
-    }, 200);
+
+      setIsUploading(true);
+
+      try {
+        await saveDocument({
+          filename: file.name,
+          sizeKB: (file.size / 1024).toFixed(2),
+          content: text,
+          uploadedAt: new Date().toISOString(),
+        });
+
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += 5;
+          setUploadProgress(progress);
+
+          if (progress >= 100) {
+            clearInterval(interval);
+            toast.success('Document processed and saved!');
+            setTimeout(() => {
+              navigate('/plan');
+            }, 500);
+          }
+        }, 100);
+      } catch (error) {
+        toast.error("Upload failed. Please try again.");
+        setIsUploading(false);
+      }
+    };
+
+    reader.onerror = () => {
+      toast.error("Error reading the file");
+    };
+
+    reader.readAsText(file);
   };
+
 
   return (
     <div className="py-12 md:py-16">
@@ -81,15 +111,14 @@ const UploadPage = () => {
         <div className="text-center mb-10">
           <h1 className="mb-4">Upload Your <span className="gradient-text">Document</span></h1>
           <p className="text-gray-700">
-            Upload a document that outlines your skills, values, and passions. 
+            Upload a document that outlines your skills, values, and passions.
             This will help our AI create a personalized life plan for you.
           </p>
         </div>
-        
-        <div 
-          className={`border-2 border-dashed rounded-xl p-10 text-center ${
-            isDragging ? 'border-ikigai-blue bg-ikigai-blue/5' : 'border-gray-300'
-          } transition-all duration-200 mb-6`}
+
+        <div
+          className={`border-2 border-dashed rounded-xl p-10 text-center ${isDragging ? 'border-ikigai-blue bg-ikigai-blue/5' : 'border-gray-300'
+            } transition-all duration-200 mb-6`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -98,22 +127,22 @@ const UploadPage = () => {
             <div className="h-16 w-16 rounded-full bg-ikigai-blue/10 flex items-center justify-center mb-4">
               <Upload className="h-8 w-8 text-ikigai-blue" />
             </div>
-            
+
             <h3 className="text-lg font-medium mb-2">Drag & Drop or Browse Files</h3>
             <p className="text-gray-600 mb-6">
               PDF or Word documents, max 5MB
             </p>
-            
-            <input 
-              type="file" 
-              className="hidden" 
-              accept=".pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf" 
+
+            <input
+              type="file"
+              className="hidden"
+              accept=".pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf"
               ref={fileInputRef}
               onChange={(e) => e.target.files && e.target.files[0] && handleFileSelect(e.target.files[0])}
             />
-            
-            <Button 
-              type="button" 
+
+            <Button
+              type="button"
               onClick={() => fileInputRef.current?.click()}
               className="ikigai-button"
             >
@@ -121,7 +150,7 @@ const UploadPage = () => {
             </Button>
           </div>
         </div>
-        
+
         {file && !isUploading && (
           <div className="bg-white rounded-xl border p-4 flex items-center justify-between mb-6">
             <div className="flex items-center">
@@ -135,7 +164,7 @@ const UploadPage = () => {
                 <p className="text-sm text-gray-500">{(file.size / 1024).toFixed(2)} KB</p>
               </div>
             </div>
-            <Button 
+            <Button
               onClick={handleUpload}
               className="ikigai-button"
             >
@@ -143,7 +172,7 @@ const UploadPage = () => {
             </Button>
           </div>
         )}
-        
+
         {isUploading && (
           <div className="bg-white rounded-xl border p-6 mb-6">
             <div className="flex justify-between items-center mb-2">
@@ -157,7 +186,7 @@ const UploadPage = () => {
             </div>
           </div>
         )}
-        
+
         <div className="bg-ikigai-bg rounded-xl p-6 border border-gray-100">
           <h3 className="text-lg font-medium mb-3">Tips For Best Results:</h3>
           <ul className="space-y-2 text-gray-700">

@@ -24,9 +24,9 @@ const mockLifePlanData = {
     { id: 4, name: 'Health & Wellness', description: 'Dedicated to maintaining and improving physical wellbeing.' },
   ],
   goals: [
-    { 
-      id: 1, 
-      title: 'Career Transition to Green Tech', 
+    {
+      id: 1,
+      title: 'Career Transition to Green Tech',
       timeframe: 'Long-term (1-3 years)',
       description: 'Leverage data analysis skills in the renewable energy sector.',
       steps: [
@@ -36,9 +36,9 @@ const mockLifePlanData = {
         'Develop a portfolio of relevant projects'
       ]
     },
-    { 
-      id: 2, 
-      title: 'Establish Work-Life Balance', 
+    {
+      id: 2,
+      title: 'Establish Work-Life Balance',
       timeframe: 'Short-term (3-6 months)',
       description: 'Create boundaries to ensure time for both professional growth and personal wellbeing.',
       steps: [
@@ -48,9 +48,9 @@ const mockLifePlanData = {
         'Implement a digital detox routine'
       ]
     },
-    { 
-      id: 3, 
-      title: 'Launch Community Education Program', 
+    {
+      id: 3,
+      title: 'Launch Community Education Program',
       timeframe: 'Medium-term (6-12 months)',
       description: 'Combine communication skills and passion for learning to benefit the community.',
       steps: [
@@ -60,9 +60,9 @@ const mockLifePlanData = {
         'Recruit volunteers and run pilot workshops'
       ]
     },
-    { 
-      id: 4, 
-      title: 'Develop Creative Portfolio', 
+    {
+      id: 4,
+      title: 'Develop Creative Portfolio',
       timeframe: 'Ongoing',
       description: 'Nurture passion for creative writing alongside professional work.',
       steps: [
@@ -77,11 +77,11 @@ const mockLifePlanData = {
 
 const LifePlanDisplay = () => {
   const [activeSectionId, setActiveSectionId] = useState<number | null>(null);
-  
+
   const toggleSection = (id: number) => {
     setActiveSectionId(activeSectionId === id ? null : id);
   };
-  
+
   return (
     <div className="bg-white rounded-xl border shadow-sm">
       <div className="p-6 border-b">
@@ -90,7 +90,7 @@ const LifePlanDisplay = () => {
           Based on the analysis of your document, here's your personalized Ikigai life plan.
         </p>
       </div>
-      
+
       <Tabs defaultValue="overview" className="w-full">
         <div className="px-6 pt-4">
           <TabsList className="grid w-full grid-cols-4">
@@ -100,7 +100,7 @@ const LifePlanDisplay = () => {
             <TabsTrigger value="passions">Passions</TabsTrigger>
           </TabsList>
         </div>
-        
+
         <TabsContent value="overview" className="p-6">
           <div className="space-y-6">
             <Card>
@@ -110,9 +110,9 @@ const LifePlanDisplay = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-700 mb-4">
-                  Your document reveals a unique combination of analytical skills, 
-                  environmental passions, and values centered around balance and 
-                  community impact. This suggests potential fulfillment in roles that 
+                  Your document reveals a unique combination of analytical skills,
+                  environmental passions, and values centered around balance and
+                  community impact. This suggests potential fulfillment in roles that
                   combine data-driven approaches with environmental or social good.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
@@ -143,7 +143,7 @@ const LifePlanDisplay = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle>Recommended Life Goals</CardTitle>
@@ -152,11 +152,11 @@ const LifePlanDisplay = () => {
               <CardContent>
                 <div className="space-y-4">
                   {mockLifePlanData.goals.map((goal) => (
-                    <div 
-                      key={goal.id} 
+                    <div
+                      key={goal.id}
                       className="border rounded-lg overflow-hidden"
                     >
-                      <div 
+                      <div
                         className="p-4 bg-white border-b flex justify-between items-center cursor-pointer"
                         onClick={() => toggleSection(goal.id)}
                       >
@@ -168,7 +168,7 @@ const LifePlanDisplay = () => {
                           {activeSectionId === goal.id ? '−' : '+'}
                         </div>
                       </div>
-                      
+
                       {activeSectionId === goal.id && (
                         <div className="p-4 bg-gray-50">
                           <p className="text-gray-700 mb-3">{goal.description}</p>
@@ -187,7 +187,7 @@ const LifePlanDisplay = () => {
             </Card>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="skills" className="p-6">
           <Card>
             <CardHeader>
@@ -206,7 +206,7 @@ const LifePlanDisplay = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="values" className="p-6">
           <Card>
             <CardHeader>
@@ -225,7 +225,7 @@ const LifePlanDisplay = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="passions" className="p-6">
           <Card>
             <CardHeader>
@@ -249,4 +249,5 @@ const LifePlanDisplay = () => {
   );
 };
 
+export const lifePlanData = mockLifePlanData;
 export default LifePlanDisplay;
