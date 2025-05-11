@@ -1,12 +1,18 @@
-
+import { Client as ContractClient, networks } from '../stellar/src/index';
+// import { StellarNetwork, Server, Keypair, TransactionBuilder, Operation } from 'stellar-sdk';
 import React, { useState, useRef } from 'react';
 import { Upload, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { saveDocument } from '@/firebase/firebase'; // Adjust path as needed
+import { saveDocument } from '@/firebase/firebase';
+import CryptoJS from 'crypto-js';
 
+
+const generateDocumentHash = (documentContent: string): string => {
+  return CryptoJS.SHA256(documentContent).toString(CryptoJS.enc.Base64);  // Generates the SHA256 hash in Base64 format
+};
 
 const UploadPage = () => {
   const [isDragging, setIsDragging] = useState(false);
@@ -55,7 +61,7 @@ const UploadPage = () => {
     setFile(selectedFile);
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) return;
 
     const reader = new FileReader();
@@ -71,6 +77,21 @@ const UploadPage = () => {
       setIsUploading(true);
 
       try {
+        // Step 1: Set up the Stellar contract client
+        const client = new ContractClient({
+          networkPassphrase: networks.testnet.networkPassphrase,
+          contractId: networks.testnet.contractId,
+          rpcUrl: 'https://soroban-testnet.stellar.org/'
+        });
+
+        // Step 2: Prepare document data
+        const docHash = generateDocumentHash(text);  // Generate or hash the document content (e.g., using SHA256 or another hashing algorithm)
+        const owner = 'user-address-or-key';  // Replace with the actual address or key of the user submitting the document
+
+        // Step 3: Call the `tokenize` method to store the document in the contract
+        const tx = await client.tokenize({ doc_hash: docHash, owner });
+
+        // Step 4: Save the document data to Firestore (or other storage)
         await saveDocument({
           filename: file.name,
           sizeKB: (file.size / 1024).toFixed(2),
@@ -78,6 +99,7 @@ const UploadPage = () => {
           uploadedAt: new Date().toISOString(),
         });
 
+        // Step 5: Process the progress
         let progress = 0;
         const interval = setInterval(() => {
           progress += 5;
@@ -92,6 +114,7 @@ const UploadPage = () => {
           }
         }, 100);
       } catch (error) {
+        console.error(error);
         toast.error("Upload failed. Please try again.");
         setIsUploading(false);
       }
@@ -103,6 +126,7 @@ const UploadPage = () => {
 
     reader.readAsText(file);
   };
+
 
 
   return (
