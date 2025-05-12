@@ -8,11 +8,21 @@ import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { saveDocument } from '@/firebase/firebase';
 import CryptoJS from 'crypto-js';
-
+import { Keypair, TransactionBuilder, Networks, Operation } from 'stellar-sdk';
 
 const generateDocumentHash = (documentContent: string): string => {
-  return CryptoJS.SHA256(documentContent).toString(CryptoJS.enc.Base64);  // Generates the SHA256 hash in Base64 format
+  if (!documentContent) {
+    throw new Error("Document content is empty");
+  }
+  const hash = CryptoJS.SHA256(documentContent);
+  const base64Hash = CryptoJS.enc.Base64.stringify(hash); // Get the base64 string
+
+  // If the base64 string is too long, trim it to 32 bytes
+  return base64Hash.substring(0, 32); // Ensure it doesn't exceed 32 bytes
 };
+
+
+
 
 const UploadPage = () => {
   const [isDragging, setIsDragging] = useState(false);
@@ -77,21 +87,40 @@ const UploadPage = () => {
       setIsUploading(true);
 
       try {
-        // Step 1: Set up the Stellar contract client
+        // Step 1: Set up the ContractClient with your contract details
         const client = new ContractClient({
           networkPassphrase: networks.testnet.networkPassphrase,
           contractId: networks.testnet.contractId,
-          rpcUrl: 'https://soroban-testnet.stellar.org/'
+          rpcUrl: 'https://soroban-testnet.stellar.org' // Soroban testnet URL
         });
 
-        // Step 2: Prepare document data
-        const docHash = generateDocumentHash(text);  // Generate or hash the document content (e.g., using SHA256 or another hashing algorithm)
-        const owner = 'user-address-or-key';  // Replace with the actual address or key of the user submitting the document
+        // Step 2: Set up the Stellar keypair for signing the transaction
+        const secret = import.meta.env.VITE_STELLAR_SECRET_KEY;
+        const keypair = Keypair.fromSecret(secret);
+        const publicKey = keypair.publicKey();
 
-        // Step 3: Call the `tokenize` method to store the document in the contract
-        const tx = await client.tokenize({ doc_hash: docHash, owner });
+        // Step 3: Generate the document hash
+        const docHash = generateDocumentHash(text);
 
-        // Step 4: Save the document data to Firestore (or other storage)
+        // Step 4: Prepare the tokenization transaction
+        const tokenizationTransaction = await client.tokenize({
+          doc_hash: docHash, // This is the document hash that you generated
+          owner: publicKey,  // The public key of the document owner
+        });
+
+        console.log('Tokenization Transaction:', tokenizationTransaction);
+
+        // // Step 5: Sign the transaction using the Stellar keypair
+        // const signedTransaction = await client.signTransaction({
+        //   transaction: tokenizationTransaction,
+        //   secretKey: secret,  // Sign the transaction using your secret key
+        // });
+
+        // // Step 6: Submit the signed transaction
+        // const result = await client.submitTransaction(signedTransaction);
+        // console.log('Transaction result:', result);
+
+        // Step 7: Save document data to Firestore
         await saveDocument({
           filename: file.name,
           sizeKB: (file.size / 1024).toFixed(2),
@@ -99,7 +128,7 @@ const UploadPage = () => {
           uploadedAt: new Date().toISOString(),
         });
 
-        // Step 5: Process the progress
+        // Step 8: Process the progress (simulate the upload progress here)
         let progress = 0;
         const interval = setInterval(() => {
           progress += 5;
@@ -114,7 +143,7 @@ const UploadPage = () => {
           }
         }, 100);
       } catch (error) {
-        console.error(error);
+        console.error("Error during file processing:", error);
         toast.error("Upload failed. Please try again.");
         setIsUploading(false);
       }
@@ -126,7 +155,6 @@ const UploadPage = () => {
 
     reader.readAsText(file);
   };
-
 
 
   return (

@@ -6,7 +6,7 @@ import { getStorage } from "firebase/storage";
 
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyDfkgiOiczenRlT-_ce1YCtMGbo3-JhzKw",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "ikigai-8e493.firebaseapp.com",
   projectId: "ikigai-8e493",
   storageBucket: "ikigai-8e493.firebasestorage.app",

@@ -1,19 +1,28 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-
-import {onRequest} from "firebase-functions/v2/https";
+// functions/index.ts
+import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
+import { initializeApp } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+// Initialize admin SDK once
+initializeApp();
+const db = getFirestore();
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+export const saveDocument = onRequest(async (req, res) => {
+  try {
+    const data = req.body;
+
+    if (!data || typeof data !== "object") {
+      res.status(400).send("Invalid request body");
+      return;
+    }
+
+    const docRef = await db.collection("documents").add(data);
+    logger.info("Document written with ID: ", docRef.id);
+
+    res.status(200).send({ success: true, id: docRef.id });
+  } catch (error) {
+    logger.error("Error saving document:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
