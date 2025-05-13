@@ -46,7 +46,7 @@ export interface Client {
   /**
    * Construct and simulate a tokenize transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
-  tokenize: ({doc_hash, owner}: {doc_hash: string, owner: string}, options?: {
+  tokenize: ({ doc_hash, owner }: { doc_hash: string, owner: string }, options?: {
     /**
      * The fee to pay for the transaction. Default: BASE_FEE
      */
@@ -66,7 +66,7 @@ export interface Client {
   /**
    * Construct and simulate a get_owner transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
-  get_owner: ({doc_hash}: {doc_hash: string}, options?: {
+  get_owner: ({ doc_hash }: { doc_hash: string }, options?: {
     /**
      * The fee to pay for the transaction. Default: BASE_FEE
      */
@@ -101,13 +101,13 @@ export class Client extends ContractClient {
   }
   constructor(public readonly options: ContractClientOptions) {
     super(
-      new ContractSpec([ "AAAAAAAAAAAAAAAIdG9rZW5pemUAAAACAAAAAAAAAAhkb2NfaGFzaAAAABEAAAAAAAAABW93bmVyAAAAAAAAEwAAAAA=",
-        "AAAAAAAAAAAAAAAJZ2V0X293bmVyAAAAAAAAAQAAAAAAAAAIZG9jX2hhc2gAAAARAAAAAQAAA+gAAAAT" ]),
+      new ContractSpec(["AAAAAAAAAAAAAAAIdG9rZW5pemUAAAACAAAAAAAAAAhkb2NfaGFzaAAAABEAAAAAAAAABW93bmVyAAAAAAAAEwAAAAA=",
+        "AAAAAAAAAAAAAAAJZ2V0X293bmVyAAAAAAAAAQAAAAAAAAAIZG9jX2hhc2gAAAARAAAAAQAAA+gAAAAT"]),
       options
     )
   }
   public readonly fromJSON = {
     tokenize: this.txFromJSON<null>,
-        get_owner: this.txFromJSON<Option<string>>
+    get_owner: this.txFromJSON<Option<string>>
   }
 }

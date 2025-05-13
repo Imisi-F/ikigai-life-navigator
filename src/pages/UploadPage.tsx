@@ -1,4 +1,4 @@
-import { Client as ContractClient, networks } from '../stellar/src/index';
+import { Client as ContractClient, networks } from '../stellarconfig/src/index';
 // import { StellarNetwork, Server, Keypair, TransactionBuilder, Operation } from 'stellar-sdk';
 import React, { useState, useRef } from 'react';
 import { Upload, Loader } from 'lucide-react';
